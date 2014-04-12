@@ -9,5 +9,9 @@
     <string name="mark_read">mark all read</string>
     <string name="share_story">Share</string>
     <string name="preferences">Preferences</string>
+    <string name="server_category">Server</string>
+    <string name="server_domain">URL</string>
+    <string name="server_domain_summary">Enter the URL of your goread installation</string>
+    <string name="default_server_domain">https://goread.io</string>
 
 </resources>
