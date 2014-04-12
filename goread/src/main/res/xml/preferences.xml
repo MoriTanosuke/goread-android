@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <PreferenceCategory android:title="Server" android:key="pref_server_category">
+        <EditTextPreference
+            android:defaultValue="https://goread.io"
+            android:key="pref_server_domain"
+            android:title="Domain" />
+    </PreferenceCategory>
+
+</PreferenceScreen>

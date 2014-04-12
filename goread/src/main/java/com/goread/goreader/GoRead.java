@@ -25,8 +25,6 @@ public final class GoRead {
     public static final String TAG = "goread";
     public static final int PICK_ACCOUNT_REQUEST = 1;
     public static final String APP_ENGINE_SCOPE = "ah";
-    public static final String GOREAD_DOMAIN = "www.goread.io";
-    public static final String GOREAD_URL = "https://" + GOREAD_DOMAIN;
     public static final String P_ACCOUNT = "ACCOUNT_NAME";
 
     public JSONObject lj = null;

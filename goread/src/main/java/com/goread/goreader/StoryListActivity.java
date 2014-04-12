@@ -41,15 +41,23 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
+import android.preference.PreferenceManager;
+import android.content.SharedPreferences;
 
 public class StoryListActivity extends ListActivity {
 
     private StoryAdapter aa;
+    private String GOREAD_URL = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_storylist);
+
+	SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+	GOREAD_URL = sharedPref.getString(SettingsActivity.KEY_PREF_URL, "https://goread.io");
+        Log.d(GoRead.TAG, "Using URL " + GOREAD_URL);
+
         aa = new StoryAdapter(this, android.R.layout.simple_list_item_1);
         setListAdapter(aa);
         try {
@@ -160,7 +168,7 @@ public class StoryListActivity extends ListActivity {
                 o.put("Story", story);
                 a.put(o);
 
-                GoRead.addReq(new JsonArrayRequest(Request.Method.POST, GoRead.GOREAD_URL + "/user/get-contents", a, new Response.Listener<JSONArray>() {
+                GoRead.addReq(new JsonArrayRequest(Request.Method.POST, GOREAD_URL + "/user/get-contents", a, new Response.Listener<JSONArray>() {
                     @Override
                     public void onResponse(JSONArray jsonArray) {
                         try {
@@ -219,7 +227,7 @@ public class StoryListActivity extends ListActivity {
             }
         }
         if (read.length() > 0) {
-            GoRead.addReq(new JsonArrayRequest(Request.Method.POST, GoRead.GOREAD_URL + "/user/mark-read", read, null, null));
+            GoRead.addReq(new JsonArrayRequest(Request.Method.POST, GOREAD_URL + "/user/mark-read", read, null, null));
             GoRead.updateFeedProperties();
             aa.notifyDataSetChanged();
         }
