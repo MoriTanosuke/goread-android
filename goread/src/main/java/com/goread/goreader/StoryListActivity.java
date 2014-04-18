@@ -19,19 +19,23 @@ package com.goread.goreader;
 import android.app.ListActivity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ListView;
+
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.jakewharton.disklrucache.DiskLruCache;
 import com.squareup.picasso.Picasso;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -41,8 +45,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
-import android.preference.PreferenceManager;
-import android.content.SharedPreferences;
 
 public class StoryListActivity extends ListActivity {
 
@@ -83,7 +85,7 @@ public class StoryListActivity extends ListActivity {
                                 getActionBar().setIcon(bd);
                             }
                         } catch (Exception e) {
-                            e.printStackTrace();
+                            Log.e(GoRead.TAG, e.getMessage(), e);
                         }
                         return null;
                     }
@@ -113,7 +115,7 @@ public class StoryListActivity extends ListActivity {
                 aa.add(s);
             }
         } catch (JSONException e) {
-            e.printStackTrace();
+            Log.e(GoRead.TAG, e.getMessage(), e);
         }
     }
 
@@ -126,7 +128,7 @@ public class StoryListActivity extends ListActivity {
                 sl.add(s);
             }
         } catch (JSONException e) {
-            e.printStackTrace();
+            Log.e(GoRead.TAG, e.getMessage(), e);
         }
     }
 
@@ -137,7 +139,7 @@ public class StoryListActivity extends ListActivity {
             try {
                 c = new Long(o1.getLong("Date")).compareTo(new Long(o2.getLong("Date")));
             } catch (JSONException e) {
-                e.printStackTrace();
+                Log.e(GoRead.TAG, e.getMessage(), e);
             }
             return c;
         }
@@ -176,7 +178,7 @@ public class StoryListActivity extends ListActivity {
                             i.putExtra("contents", r);
                             Log.e("goread", "NOT from cache");
                         } catch (JSONException e) {
-                            e.printStackTrace();
+                            Log.e(GoRead.TAG, e.getMessage(), e);
                         }
                     }
                 }, null));

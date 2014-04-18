@@ -71,9 +71,9 @@ public final class GoRead {
             cript.update("|".getBytes());
             cript.update(story.getBytes());
         } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
+            Log.e(GoRead.TAG, e.getMessage(), e);
         } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
+            Log.e(GoRead.TAG, e.getMessage(), e);
         }
         String sha = new BigInteger(1, cript.digest()).toString(16);
         return sha;
@@ -153,7 +153,7 @@ public final class GoRead {
             fw.close();
             Log.e(TAG, "write feed cache");
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.e(GoRead.TAG, e.getMessage(), e);
         }
     }
 

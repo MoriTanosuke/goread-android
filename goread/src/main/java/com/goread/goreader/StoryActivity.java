@@ -26,10 +26,14 @@ import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.widget.ShareActionProvider;
 import android.text.Html;
+import android.util.Log;
+import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.webkit.WebView;
+
 import com.squareup.picasso.Picasso;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -52,7 +56,9 @@ public class StoryActivity extends ActionBarActivity {
         // Needs to be called before setting the content view
         setContentView(R.layout.activity_story);
         WebView wv = (WebView) findViewById(R.id.webview);
+
         Intent i = getIntent();
+        registerForContextMenu(wv);
         try {
             JSONObject story = new JSONObject(i.getStringExtra("story"));
             JSONObject feed = GoRead.get().feeds.get(story.getString("feed"));
@@ -102,16 +108,16 @@ public class StoryActivity extends ActionBarActivity {
                             getActionBar().setIcon(bd);
                         }
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        Log.e(GoRead.TAG, e.getMessage(), e);
                     }
                     return null;
                 }
             };
             task.execute(story.getString("feed"));
         } catch (JSONException e) {
-            e.printStackTrace();
+            Log.e(GoRead.TAG, e.getMessage(), e);
         } catch (IOException e) {
-            e.printStackTrace();
+            Log.e(GoRead.TAG, e.getMessage(), e);
         }
     }
 
@@ -123,6 +129,16 @@ public class StoryActivity extends ActionBarActivity {
         // Get the provider and hold onto it to set/change the share intent.
         mShareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(shareItem);
         setShare();
+
+        WebView wv = (WebView) findViewById(R.id.webview);
+        WebView.HitTestResult result = wv.getHitTestResult();
+        if (result.getType() == WebView.HitTestResult.SRC_ANCHOR_TYPE) {
+            String mUrl = result.getExtra();
+            Log.d(GoRead.TAG, "Clicked on " + mUrl);
+            //TODO remove hardcoded ID "999"
+            menu.add(ContextMenu.NONE, 999, 0, R.string.action_share_url);
+        }
+
         return super.onCreateOptionsMenu(menu);
     }
 
