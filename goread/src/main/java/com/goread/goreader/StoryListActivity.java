@@ -19,19 +19,23 @@ package com.goread.goreader;
 import android.app.ListActivity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ListView;
+
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.jakewharton.disklrucache.DiskLruCache;
 import com.squareup.picasso.Picasso;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -45,11 +49,17 @@ import java.util.Iterator;
 public class StoryListActivity extends ListActivity {
 
     private StoryAdapter aa;
+    private String GOREAD_URL = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_storylist);
+
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+        GOREAD_URL = sharedPref.getString(SettingsActivity.KEY_PREF_URL, "https://goread.io");
+        Log.d(GoRead.TAG, "Using URL " + GOREAD_URL);
+
         aa = new StoryAdapter(this, android.R.layout.simple_list_item_1);
         setListAdapter(aa);
         try {
@@ -75,7 +85,7 @@ public class StoryListActivity extends ListActivity {
                                 getActionBar().setIcon(bd);
                             }
                         } catch (Exception e) {
-                            e.printStackTrace();
+                            Log.e(GoRead.TAG, e.getMessage(), e);
                         }
                         return null;
                     }
@@ -105,7 +115,7 @@ public class StoryListActivity extends ListActivity {
                 aa.add(s);
             }
         } catch (JSONException e) {
-            e.printStackTrace();
+            Log.e(GoRead.TAG, e.getMessage(), e);
         }
     }
 
@@ -118,7 +128,7 @@ public class StoryListActivity extends ListActivity {
                 sl.add(s);
             }
         } catch (JSONException e) {
-            e.printStackTrace();
+            Log.e(GoRead.TAG, e.getMessage(), e);
         }
     }
 
@@ -129,7 +139,7 @@ public class StoryListActivity extends ListActivity {
             try {
                 c = new Long(o1.getLong("Date")).compareTo(new Long(o2.getLong("Date")));
             } catch (JSONException e) {
-                e.printStackTrace();
+                Log.e(GoRead.TAG, e.getMessage(), e);
             }
             return c;
         }
@@ -160,7 +170,7 @@ public class StoryListActivity extends ListActivity {
                 o.put("Story", story);
                 a.put(o);
 
-                GoRead.addReq(new JsonArrayRequest(Request.Method.POST, GoRead.GOREAD_URL + "/user/get-contents", a, new Response.Listener<JSONArray>() {
+                GoRead.addReq(new JsonArrayRequest(Request.Method.POST, GOREAD_URL + "/user/get-contents", a, new Response.Listener<JSONArray>() {
                     @Override
                     public void onResponse(JSONArray jsonArray) {
                         try {
@@ -168,7 +178,7 @@ public class StoryListActivity extends ListActivity {
                             i.putExtra("contents", r);
                             Log.e("goread", "NOT from cache");
                         } catch (JSONException e) {
-                            e.printStackTrace();
+                            Log.e(GoRead.TAG, e.getMessage(), e);
                         }
                     }
                 }, null));
@@ -219,7 +229,7 @@ public class StoryListActivity extends ListActivity {
             }
         }
         if (read.length() > 0) {
-            GoRead.addReq(new JsonArrayRequest(Request.Method.POST, GoRead.GOREAD_URL + "/user/mark-read", read, null, null));
+            GoRead.addReq(new JsonArrayRequest(Request.Method.POST, GOREAD_URL + "/user/mark-read", read, null, null));
             GoRead.updateFeedProperties();
             aa.notifyDataSetChanged();
         }

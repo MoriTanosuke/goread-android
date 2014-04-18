@@ -23,12 +23,14 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ListView;
 import android.widget.Toast;
+
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
@@ -38,6 +40,7 @@ import com.google.android.gms.auth.GoogleAuthUtil;
 import com.google.android.gms.auth.UserRecoverableAuthException;
 import com.google.android.gms.common.AccountPicker;
 import com.jakewharton.disklrucache.DiskLruCache;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -62,9 +65,17 @@ public class MainActivity extends ListActivity {
     private String authToken = null;
     private MenuItem refreshMenuItem = null;
 
+    private String GOREAD_URL;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // load preferences
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+        GOREAD_URL = sharedPref.getString(SettingsActivity.KEY_PREF_URL, "https://goread.io");
+        Log.d(GoRead.TAG, "Using URL " + GOREAD_URL);
+
         try {
             Log.e(GoRead.TAG, "onCreate");
             setContentView(R.layout.activity_main);
@@ -149,6 +160,10 @@ public class MainActivity extends ListActivity {
                 case R.id.action_mark_read:
                     markRead();
                     return true;
+                case R.id.action_preferences:
+                    Intent launchPreferencesIntent = new Intent(this, SettingsActivity.class);
+                    startActivity(launchPreferencesIntent);
+                    return true;
             }
         } catch (Exception e) {
             Log.e(GoRead.TAG, "oois", e);
@@ -174,7 +189,7 @@ public class MainActivity extends ListActivity {
         Log.e(GoRead.TAG, "mark read");
         JSONArray read = new JSONArray();
         markRead(read, oa);
-        GoRead.addReq(new JsonArrayRequest(Request.Method.POST, GoRead.GOREAD_URL + "/user/mark-read", read, null, null));
+        GoRead.addReq(new JsonArrayRequest(Request.Method.POST, GOREAD_URL + "/user/mark-read", read, null, null));
         GoRead.updateFeedProperties();
         aa.notifyDataSetChanged();
     }
@@ -258,7 +273,7 @@ public class MainActivity extends ListActivity {
                     return;
                 }
                 try {
-                    URL url = new URL(GoRead.GOREAD_URL + "/_ah/login" + "?continue=" + URLEncoder.encode(GoRead.GOREAD_URL, "UTF-8") + "&auth=" + URLEncoder.encode(authToken, "UTF-8"));
+                    URL url = new URL(GOREAD_URL + "/_ah/login" + "?continue=" + URLEncoder.encode(GOREAD_URL, "UTF-8") + "&auth=" + URLEncoder.encode(authToken, "UTF-8"));
                     GoRead.addReq(new StringRequest(Request.Method.GET, url.toString(), new Response.Listener<String>() {
                         @Override
                         public void onResponse(String s) {
@@ -289,14 +304,14 @@ public class MainActivity extends ListActivity {
         try {
             GoRead.get().feeds.put(o.getString("XmlUrl"), o);
         } catch (JSONException e) {
-            e.printStackTrace();
+            Log.e(GoRead.TAG, e.getMessage(), e);
         }
     }
 
     protected void fetchListFeeds() {
         Log.e(GoRead.TAG, "fetchListFeeds");
         final Context c = this;
-        GoRead.addReq(new JsonUTF8Request(Request.Method.GET, GoRead.GOREAD_URL + "/user/list-feeds", null, new Response.Listener<JSONObject>() {
+        GoRead.addReq(new JsonUTF8Request(Request.Method.GET, GOREAD_URL + "/user/list-feeds", null, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject jsonObject) {
                 GoRead.get().lj = jsonObject;
@@ -336,7 +351,7 @@ public class MainActivity extends ListActivity {
             }
             Log.e(GoRead.TAG, String.format("downloading %d stories", ja.length()));
             if (ja.length() > 0) {
-                GoRead.addReq(new JsonArrayRequest(Request.Method.POST, GoRead.GOREAD_URL + "/user/get-contents", ja, new Response.Listener<JSONArray>() {
+                GoRead.addReq(new JsonArrayRequest(Request.Method.POST, GOREAD_URL + "/user/get-contents", ja, new Response.Listener<JSONArray>() {
                     @Override
                     public void onResponse(JSONArray jsonArray) {
                         cacheStories(ja, jsonArray);
@@ -470,9 +485,9 @@ public class MainActivity extends ListActivity {
     }
 
     private void setRefreshing(boolean refreshing) {
-        if(refreshMenuItem == null) return;
+        if (refreshMenuItem == null) return;
 
-        if(refreshing) {
+        if (refreshing) {
             refreshMenuItem.setActionView(R.layout.actionbar_refresh_progress);
             refreshMenuItem.expandActionView();
         } else

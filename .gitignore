@@ -1,7 +1,7 @@
 # IntelliJ IDE settings
 *.iml
 *.ipr
-.idea/
+.idea
 *.iws
 
 # Folders related to builds
