@@ -165,9 +165,7 @@ public class StoryActivity extends ActionBarActivity {
                 // reset class member
                 mUrl = null;
                 break;
-            /*
-+             * default behavior is to share the article URL
-+             */
+            //default behavior is to share the article URL
             case R.id.action_share_story:
             default:
                 shareIntent = getUrlShareIntent(mStoryLink);
@@ -177,6 +175,12 @@ public class StoryActivity extends ActionBarActivity {
         return super.onContextItemSelected(item);
     }
 
+    /**
+     * Build a new intent to share a specific URL with other applications.
+     *
+     * @param url the URL you want to share
+     * @return new Intent with {@link Intent#ACTION_SEND}
+     */
     private Intent getUrlShareIntent(String url) {
         Intent i = new Intent(Intent.ACTION_SEND);
         i.setType("text/plain");

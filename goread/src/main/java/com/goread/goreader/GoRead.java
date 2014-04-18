@@ -102,7 +102,7 @@ public final class GoRead {
             }
             icons = ic;
         } catch (JSONException e) {
-            Log.e(TAG, "ufp", e);
+            Log.e(TAG, "update feed properties", e);
         }
     }
 

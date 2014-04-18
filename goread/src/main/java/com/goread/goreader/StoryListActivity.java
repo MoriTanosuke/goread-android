@@ -137,7 +137,7 @@ public class StoryListActivity extends ListActivity {
         public int compare(JSONObject o1, JSONObject o2) {
             int c = 0;
             try {
-                c = new Long(o1.getLong("Date")).compareTo(new Long(o2.getLong("Date")));
+                c = Long.valueOf(o1.getLong("Date")).compareTo(Long.valueOf(o2.getLong("Date")));
             } catch (JSONException e) {
                 Log.e(GoRead.TAG, e.getMessage(), e);
             }

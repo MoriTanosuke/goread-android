@@ -314,7 +314,8 @@ public class MainActivity extends ListActivity {
         GoRead.addReq(new JsonUTF8Request(Request.Method.GET, GOREAD_URL + "/user/list-feeds", null, new Response.Listener<JSONObject>() {
             @Override
             public void onResponse(JSONObject jsonObject) {
-                GoRead.get().lj = jsonObject;
+                FeedListFilter feedFilter = new FeedListFilter();
+                GoRead.get().lj = feedFilter.filterRead(jsonObject);
                 GoRead.updateFeedProperties();
                 downloadStories();
                 displayFeeds();
@@ -400,20 +401,23 @@ public class MainActivity extends ListActivity {
             aa.clear();
 
             if (i.hasExtra(K_OUTLINE)) {
+                //TODO don't use clicked position to get folder, use a key
                 pos = i.getIntExtra(K_OUTLINE, -1);
+                String title = i.getStringExtra(K_OUTLINE_TITLE);
+                Log.d(GoRead.TAG, String.format("displaying outline %s on position %s", title, pos));
                 try {
                     JSONArray ta = GoRead.get().lj.getJSONArray("Opml");
                     to = ta.getJSONObject(pos);
                     String t = to.getString("Title");
                     setTitle(t);
-                    addItem(t, OutlineType.FOLDER, t);
+                    addItem(new Outline(t, OutlineType.FOLDER, t));
                     oa = to.getJSONArray("Outline");
                     parseJSON();
                 } catch (JSONException e) {
                     Log.e(GoRead.TAG, "pos", e);
                 }
             } else {
-                addItem("all items", OutlineType.ALL, null);
+                addItem(new Outline("all items", OutlineType.ALL, null));
                 GoRead.get().feeds = new HashMap<String, JSONObject>();
                 oa = GoRead.get().lj.getJSONArray("Opml");
                 for (int i = 0; i < oa.length(); i++) {
@@ -435,8 +439,18 @@ public class MainActivity extends ListActivity {
         }
     }
 
-    protected void addItem(String i, OutlineType type, String key) {
-        aa.add(new Outline(i, type, key));
+    protected void addItem(Outline outline) {
+        //TODO move "show unread only" to preferences
+        //don't add outlines with no unread stories
+        if(hasUnread(outline)) {
+            aa.add(outline);
+        }
+    }
+
+    private boolean hasUnread(Outline outline) {
+        Log.d(GoRead.TAG, "Outline " + outline.getTitle() + " has " + outline.Unread()
+                + " unread stories");
+        return outline.Unread() > 0;
     }
 
     protected void parseJSON() {
@@ -445,23 +459,27 @@ public class MainActivity extends ListActivity {
                 JSONObject o = oa.getJSONObject(i);
                 String t = o.getString("Title");
                 if (o.has("Outline")) {
-                    addItem(t, OutlineType.FOLDER, t);
+                    Outline outline = new Outline(t, OutlineType.FOLDER, t);
+                    addItem(outline);
                 } else if (o.has("XmlUrl")) {
                     String u = o.getString("XmlUrl");
-                    addItem(t, OutlineType.FEED, u);
+                    Outline outline = new Outline(t, OutlineType.FEED, u);
+                    addItem(outline);
                 }
             }
         } catch (JSONException e) {
-            Log.e(GoRead.TAG, "parse json", e);
+            Log.e(GoRead.TAG, "can not parse json", e);
         }
     }
 
     public static final String K_OUTLINE = "OUTLINE";
+    public static final String K_OUTLINE_TITLE = "OUTLINE_TITLE";
     public static final String K_FOLDER = "FOLDER";
     public static final String K_FEED = "FEED";
 
     @Override
     public void onListItemClick(ListView l, View v, int position, long id) {
+        Log.d(GoRead.TAG, String.format("Clicked position %d", position));
         try {
             if (position == 0) {
                 Intent i = new Intent(this, StoryListActivity.class);
@@ -471,7 +489,9 @@ public class MainActivity extends ListActivity {
                 JSONObject o = oa.getJSONObject(position - 1);
                 if (o.has("Outline")) {
                     Intent i = new Intent(this, MainActivity.class);
+                    //TODO don't use position to get the folder, use a key
                     i.putExtra(K_OUTLINE, position - 1);
+                    i.putExtra(K_OUTLINE_TITLE, o.getString("Title"));
                     startActivity(i);
                 } else {
                     Intent i = new Intent(this, StoryListActivity.class);
